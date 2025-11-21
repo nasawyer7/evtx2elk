@@ -19,7 +19,8 @@ i is the index. By default, it will upload to hostlogs if not specified.
 
 Do not create the index first, this tool will do that. 
 
-# Data view creation
+Data view creation
+--------
 Once the upload is finished, go to elk (kibana, port 5601) -> analytics -> discover.
 In the top left, select the drop down to data views, and select create a data view. 
 
