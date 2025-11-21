@@ -1,0 +1,17 @@
+winlogbeat.event_logs:
+  - name: ${EVTX_FILE} 
+    no_more_events: stop
+
+winlogbeat.shutdown_timeout: 30s
+winlogbeat.registry_file: evtx-registry.yml
+
+setup.kibana:
+  host: "ip:5601"
+  username: "elastic"
+  password: "changeme"
+
+output.elasticsearch:
+  hosts: ["ip:9200"]
+  username: "elastic"
+  password: "changeme"
+  pipeline: "" 
