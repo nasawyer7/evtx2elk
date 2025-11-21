@@ -33,8 +33,11 @@ The name and timestamp field should autofill. Press save data view to kibana.
 Windows Config
 --------
 Download Winlogbeats and extract the zip to program files. 
+
 Create your folder where you wish to put your windows logs at. In my case, I created it at C:\Logs_Drop_Folder
+
 Put the dropper.ps1 script within that folder, and adjust any possible folder names at the top of the script. 
+
 Place the evtx-ingest.yml script within the winlogbeats folder in program files. Adjust to point to your correct IP and username and password. 
 
 Now, you are ready for normal use! Simply place your evtx logs in the Logs drop folder, and then run the dropper.ps1 script. It should upload all of your logs and move them to a seperate folder when done. I will likely add index management to this script later. 
