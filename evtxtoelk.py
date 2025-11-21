@@ -1,4 +1,5 @@
 import contextlib
+import os
 import mmap
 import traceback
 import json
@@ -37,11 +38,17 @@ class EvtxToElk:
                         log_line = xmltodict.parse(xml)
 
                         # Format the date field
-                        date = log_line.get("Event").get("System").get("TimeCreated").get("@SystemTime")
-                        if "." not in str(date):
-                            date = datetime.strptime(date, "%Y-%m-%d %H:%M:%S")
-                        else:
-                            date = datetime.strptime(date, "%Y-%m-%d %H:%M:%S.%f")
+                        #date = log_line.get("Event").get("System").get("TimeCreated").get("@SystemTime")
+                        #if "." not in str(date):
+                        #    date = datetime.strptime(date, "%Y-%m-%d %H:%M:%S")
+                        #else:
+                        #    date = datetime.strptime(date, "%Y-%m-%d %H:%M:%S.%f")
+                        date_str = log_line.get("Event").get("System").get("TimeCreated").get("@SystemTime")
+
+                        # Use fromisoformat(), which correctly handles ISO 8601 strings
+                        # including microseconds and timezone offsets.
+                        # This replaces the entire if/else block.
+                        date = datetime.fromisoformat(date_str)
                         log_line['@timestamp'] = str(date.isoformat())
                         log_line["Event"]["System"]["TimeCreated"]["@SystemTime"] = str(date.isoformat())
 
@@ -95,7 +102,7 @@ class EvtxToElk:
                         #bulk_queue.append(event_record)
                         event_data = json.loads(json.dumps(log_line))
                         event_data["_index"] = elk_index
-                        event_data["_type"] = elk_index
+                        #event_data["_type"] = elk_index
                         event_data["meta"] = metadata
                         bulk_queue.append(event_data)
 
@@ -131,16 +138,34 @@ class EvtxToElk:
                         print('Failed to bulk data to Elasticsearch')
                         sys.exit(1)
 
-
 if __name__ == "__main__":
     # Create argument parser
     parser = argparse.ArgumentParser()
     # Add arguments
-    parser.add_argument('evtxfile', help="Evtx file to parse")
+    parser.add_argument('input_path', help="Evtx file or folder to parse")
     parser.add_argument('elk_ip', default="localhost", help="IP (and port) of ELK instance")
     parser.add_argument('-i', default="hostlogs", help="ELK index to load data into")
     parser.add_argument('-s', default=500, help="Size of queue")
     parser.add_argument('-meta', default={}, type=json.loads, help="Metadata to add to records")
-    # Parse arguments and call evtx to elk class
+    # Parse arguments
     args = parser.parse_args()
-    EvtxToElk.evtx_to_elk(args.evtxfile, args.elk_ip, elk_index=args.i, bulk_queue_len_threshold=int(args.s), metadata=args.meta)
+    input_path = args.input_path
+    # Check if the path is a directory
+    if os.path.isdir(input_path):
+        for filename in os.listdir(input_path):
+            if filename.lower().endswith(".evtx"):
+                file_path = os.path.join(input_path, filename)
+                print(f"\n[+] Processing: {file_path}")
+                try:
+                    EvtxToElk.evtx_to_elk(file_path, args.elk_ip, elk_index=args.i, bulk_queue_len_threshold=int(args.s), metadata=args.meta)
+                    print(f"[+] Finished: {file_path}")
+                except Exception as e:
+                    print(f"[!] FAILED to process {file_path}: {e}")
+                    print(traceback.format_exc())
+    elif os.path.isfile(input_path):
+        print("processing one file")
+        EvtxToElk.evtx_to_elk(input_path, args.elk_ip, elk_index=args.i, bulk_queue_len_threshold=int(args.s), metadata=args.meta)
+        print("processing finished")
+    else:
+        print(f"Error: Path '{input_path}' is not a valid file or directory.")
+        sys.exit(1)
