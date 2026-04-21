@@ -13,7 +13,9 @@ Blog is initially avaliable here, it is slightly out of date but credit goes to 
 I have now updated this script a bit. It now can parse folders or single files correctly. Also, now it will succeed in parsing timestamps from sysmon logs. Please let me know if there are any errors when using it. Email me at nathan@nathan2.com. 
 
 Usage: 
+```
 python3 evtxtoelk.py ~/Downloads/ http://elastic:password@ip:9200  -i unit42
+```
 
 Downloads is the folder with evtx files to parse. You can also point at a single file. 
 Change the password and ip to match your instance. 
