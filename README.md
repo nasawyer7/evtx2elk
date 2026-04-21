@@ -14,9 +14,9 @@ I have now updated this script a bit. It now can parse folders or single files c
 
 Usage: 
 
-``
+```
 python3 evtxtoelk.py ~/Downloads/ http://elastic:password@ip:9200  -i unit42
-``
+```
 
 Downloads is the folder with evtx files to parse. You can also point at a single file. 
 Change the password and ip to match your instance. 
